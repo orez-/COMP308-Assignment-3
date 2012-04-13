@@ -9,7 +9,19 @@ include IO.asm
 .code
 start:
 	mov ax, @data
-	modv ds, ax
+	mov ds, ax
+	
+	
+	jmp .end
+	call setmode
+	mov ah 2
+	call setpencolor
+	call drawpixel
+	
+.end:
+    mov ah, 4ch
+    int 21h
+	
 ;;this is where the api goes
 
 ;; bool AL SETMODE(int AH)
@@ -20,9 +32,9 @@ start:
 	;; mov ah 0
 ;; this is the mode it will change to
 setmode:	
-	mov al [ah]
+	mov al [ah]    ; wat?
 	mov ah 0
-	int 10
+	int 10h
 	ret
 ;; bool AL SETPENCOLOR(int COLOR)
 ;; By providing the color number as a parameter the API will remember that you are
@@ -46,7 +58,12 @@ setpencolor:
 ;; Using the pen color and mode you already selected set pixel at X, Y to color and
 ;; returns false if there was a problem. Important: this function does not use the
 ;; BIOS but accesses the memory directly.
-drawpixel:	
+drawpixel:
+    mov ah 0Ch  ; draw pixel
+    mov al PENCOLOR
+    mov cx 200  ; x
+    mov dx 200  ; y
+    int 10h
 	ret
 ;;bool AL DRAWLINE(int X, int Y, int X2, int Y2)
 ;; Using the pen color and the mode you already selected this function draws a
