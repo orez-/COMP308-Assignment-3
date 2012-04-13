@@ -17,6 +17,11 @@ start:
 	call setmode
 	mov ah, 10
 	call setpencolor
+	push 5
+	push 5
+	call drawpixel
+	push 7
+	push 5
 	call drawpixel
 	
 .end:
@@ -193,12 +198,19 @@ setpencolor:
 ;; returns false if there was a problem. Important: this function does not use the
 ;; BIOS but accesses the memory directly.
 drawpixel:
+    push bp
+    mov bp, sp
+    
     mov bh, 0
     mov al, PENCOLOR
-    mov cx, 10  ; x
-    mov dx, 20  ; y
+    mov cx, [bp+6]
+    mov dx, [bp+4]
     mov ah, 0Ch  ; draw pixel
     int 10h
+    
+    pop di
+    mov sp, bp
+    pop bp
 	ret
 ;;bool AL DRAWLINE(int X, int Y, int X2, int Y2)
 ;; Using the pen color and the mode you already selected this function draws a
@@ -210,6 +222,17 @@ drawline:
     mov bp, sp
     
     
+    
+    push ax
+    push bx
+    push cx
+    push dx
+    ; TODO: coordinates
+    call drawpixel
+    pop dx
+    pop cx
+    pop bx
+    pop ax
     
     
 	pop di 			; cleanup etc
