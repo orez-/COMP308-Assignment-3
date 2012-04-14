@@ -16,7 +16,6 @@ start:
 	mov al, 13
 	call setmode
 	;mov ah, 10
-	call setpencolor
 	;push 1
 	;push 0
 	;call drawpixel
@@ -45,11 +44,24 @@ start:
 	;push 0
 	;call drawpixel
 	
-	push 10
+	mov al, 1110b
+    call setpencolor
 	push 10
 	push 30
-	push 20
+	push 40
+	push 35
 	call drawline
+	add bp, 8
+	
+	;mov al, 1100b
+	;call setpencolor
+	;push 10
+	;push 30
+	;call drawpixel
+	;push 40
+	;push 35
+	;call drawpixel
+	;add bp, 4
 	
 .end:
     mov ah, 4ch
@@ -195,7 +207,7 @@ PrintInt:
 ;; change screen mode 
 	;; mov ah 0
 ;; this is the mode it will change to
-setmode:	
+setmode:
 	;mov al, ah    ; wat?
 	mov al, 13h
 	mov ah, 0
@@ -211,7 +223,6 @@ setpencolor:
 	mov bp, sp
 
 	;call getInt 		;which stores stuff in al
-	mov al, 1100b
 	mov PENCOLOR, al
 	;; cmp blah
 	;jne blah
@@ -227,6 +238,7 @@ setpencolor:
 drawpixel:
     push bp
     mov bp, sp
+    push di
     
     mov bh, 0
     mov al, PENCOLOR
@@ -248,19 +260,20 @@ drawline:
     push bp
     mov bp, sp
     
-    mov ax, 0   ; get ready for division
+    sub sp, 6
     
-    mov cx, [bp+4]  ; x2
-    mov bx, [bp]    ; x1
+    mov cx, [bp+6]  ; x1
+    mov bx, [bp+10] ; x0
     sub cx, bx      ; delta x
     
-    mov ax, [bp+6]  ; y2
-    mov bx, [bp+2]  ; y
+    mov ax, [bp+4]  ; y1
+    mov bx, [bp+8]  ; cy = y
     sub ax, bx      ; delta y
     
     mov dx, 0   ; div
     
     idiv cx ; ax=int(ax/cx)  dx=reminder(ax/cx)
+    mov cx, [bp+6]  ; cx = x
     ;mov ax, 0   ; error
     
 ;     function line(x0, x1, y0, y1)
@@ -276,7 +289,7 @@ drawline:
 ;         if error >= 0.5 then
 ;             y := y + 1
 ;             error := error - 1.0
-    push [bp+4] ; set x2
+    push [bp+2] ; set x1
     push ax ; set error threshold [sp+2]
     push dx ; set error step [sp]
     mov dx, 0
@@ -292,15 +305,14 @@ drawline:
         pop dx
         pop ax
         
-        add dx, [bp-6]   ; add errorstep to error
-        cmp dx, [bp-4]   ; compare the new error to the error_threshold
-        jl .dl_skip
+        add dx, [bp-4]   ; add errorstep to error
+        cmp dx, [bp-2]   ; compare the new error to the error_threshold
+        jl .dl_skip ; if error >= error_threshold
             inc bx  ; y++
-            sub dx, [bp-4]    ; error-=error_thresh
-        ; put error away, take coords out
+            sub dx, [bp-2]    ; error-=error_thresh
         .dl_skip:
         inc cx  ; x++
-        cmp cx, [bp-2]  ; if x < x1
+        cmp cx, [ bp ]  ; if x < x1
             jl .dl_loop ; loop
     
     
