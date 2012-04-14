@@ -2,78 +2,158 @@
 .model huge
 .stack 100h
 .data
-	PENCOLOR db 1100b
+    PENCOLOR db 1100b
+    winA dw 0A000h
+    xRes dw 0
+    yRes dw 0
+    bbp  dw 2
+    gran dw 0
+    fnptr dw 0
 
 .data?
-    buffer db 100 DUP(?)
+    buffer db 256 DUP(?)
 
 .code
 start:
-	mov ax, @data
-	mov ds, ax
-	
-	push 101h
-	call setmode
-	add sp, 2
-	;mov ah, 10
-	;push 1
-	;push 0
-	;call drawpixel
-	;push 2
-	;push 0
-	;call drawpixel
-	;push 4
-	;push 0
-	;call drawpixel
-	;push 8
-	;push 0
-	;call drawpixel
-	;push 16
-	;push 0
-	;call drawpixel
-	;push 32
-	;push 0
-	;call drawpixel
-	;push 64
-	;push 0
-	;call drawpixel
-	;push 128
-	;push 0
-	;call drawpixel
-	;push 256
-	;push 0
-	;call drawpixel
-	
-	mov al, 1110b
+    mov ax, @data
+    mov ds, ax
+    
+    push 101h
+    call setmode
+    add sp, 2
+    
+    push 1
     call setpencolor
-	
-    push 10
-	push 30
-	push 40
-	push 35
-	call drawline
-	add sp, 8
-	
-	mov al, 1100b
-	call setpencolor
-	
-	push 50
-	push 100
-	push 30
-	push 200
-	call drawline
-	add sp, 8
-	
-	;mov al, 1100b
-	;call setpencolor
-	;push 10
-	;push 30
-	;call drawpixel
-	;push 40
-	;push 35
-	;call drawpixel
-	;add bp, 4
-	
+    add sp, 2
+    
+    push 200
+    push 100
+    push 150
+    push 125
+    call drawline
+    add sp, 8
+    
+    push 2
+    call setpencolor
+    add sp, 2
+    
+    push 200
+    push 100
+    push 150
+    push 100
+    call drawline
+    add sp, 8
+    
+    push 3
+    call setpencolor
+    add sp, 2
+    
+    push 200
+    push 100
+    push 150
+    push  75
+    call drawline
+    add sp, 8
+    
+    push 4
+    call setpencolor
+    add sp, 2
+    
+    push 200
+    push 100
+    push 175
+    push 50
+    call drawline
+    add sp, 8
+    
+    push 5
+    call setpencolor
+    add sp, 2
+    
+    push 200
+    push 100
+    push 200
+    push 50
+    call drawline
+    add sp, 8
+    
+    push 6
+    call setpencolor
+    add sp, 2
+    
+    push 200
+    push 100
+    push 225
+    push 50
+    call drawline
+    add sp, 8
+    
+    push 7
+    call setpencolor
+    add sp, 2
+    
+    push 200
+    push 100
+    push 250
+    push 75
+    call drawline
+    add sp, 8
+    
+    push 8
+    call setpencolor
+    add sp, 2
+    
+    push 200
+    push 100
+    push 250
+    push 100
+    call drawline
+    add sp, 8
+    
+    push 9
+    call setpencolor
+    add sp, 2
+    
+    push 200
+    push 100
+    push 250
+    push 125
+    call drawline
+    add sp, 8
+    
+    push 0Ah
+    call setpencolor
+    add sp, 2
+    
+    push 200
+    push 100
+    push 225
+    push 150
+    call drawline
+    add sp, 8
+    
+    push 0Bh
+    call setpencolor
+    add sp, 2
+    
+    push 200
+    push 100
+    push 200
+    push 150
+    call drawline
+    add sp, 8
+    
+    push 0Ch
+    call setpencolor
+    add sp, 2
+    
+    push 200
+    push 100
+    push 175
+    push 150
+    call drawline
+    add sp, 8
+    
 .end:
     mov ah, 4ch
     int 21h
@@ -147,6 +227,7 @@ puts:
 GetInt:
     push bp
     mov bp, sp
+    push cx
     
     xor cx, cx  ; Where we're going to be keeping our integer until the very end
     mov bl, 10  ; humans tend to count in base 10
@@ -166,6 +247,7 @@ GetInt:
     .gint_brk:
     mov al, cl  ; except don't leave him as the last character read
     
+    pop cx
     mov sp, bp
     pop bp
     ret
@@ -207,9 +289,51 @@ PrintInt:
     pop bp
     ret
 
-
-
 ;;this is where the api goes
+
+getmode:
+    push bp
+    mov bp, sp
+    push ax
+    push di
+    push dx
+    
+    mov ax, ds
+    mov es, ax  ; why!?!
+    
+    mov ax, 4F03h
+    int 10h ; get bx????
+    
+    mov ax, 4F01h
+    mov cx, bx ; 101h
+    mov di, OFFSET buffer
+    int 10h     ; get SVGA mode info
+    
+    mov ax, [di+8h ]
+    mov winA, ax
+    xor ax, ax  ; zero it
+    mov al, [di+19h]  ; bits per pixel
+    shr ax, 3   ; /8 for bytes
+    
+    mov bbp , ax
+    mov ax, [di+12h]
+    mov xRes, ax
+    mov ax, [di+14h]
+    mov yRes, ax
+    mov ax, [di+4h ]  ; granularity(?)
+    shl ax, 10        ; *1024
+    mov gran, ax
+    mov dx, [di+0Ch]
+    mov ax, [di+0Eh]
+    mov WORD PTR fnptr, dx
+    mov WORD PTR fnptr+2, ax
+    
+    pop dx
+    pop di
+    pop ax
+    mov sp, bp
+    pop bp
+    ret
 
 ;; bool AL SETMODE(int AH)
 ;; permits user to set to some mode; if not work, autoreset to standard text mode,
@@ -218,33 +342,36 @@ setmode:
     push bp
     mov bp, sp
     push bx
+    push ax
     
-	mov ax, 4F02h
-	mov bx, [bp+4]
-	int 10h
-	
-	pop bx
-	mov sp, bp
-	pop bp
-	ret
+    mov ax, 4F02h
+    mov bx, [bp+4]
+    int 10h
+    
+    call getmode
+    
+    pop ax
+    pop bx
+    mov sp, bp
+    pop bp
+    ret
+
 ;; bool AL SETPENCOLOR(int COLOR)
 ;; By providing the color number as a parameter the API will remember that you are
 ;; currently using that colored pencil. The function returns false if it encounters
 ;; a problem. You will need a variable in memory to store this information, call it
 ;; PENCOLOR.
 setpencolor:
-	push bp
-	mov bp, sp
-	
-	;call getInt 		;which stores stuff in al
-	mov PENCOLOR, al
-	;; cmp blah
-	;jne blah
-	;mov al 0
-	;ret
-	
-	pop bp
-	ret
+    push bp
+    mov bp, sp
+    
+    mov ax, [bp+4]      ; get int COLOR
+    mov PENCOLOR, al    ; set PENCOLOR to that variable
+    mov ax, 1           ; return true: no errors!
+    
+    pop bp
+    ret
+
 ;;bool AL DRAWPIXEL(int X, int Y)
 ;; Using the pen color and mode you already selected set pixel at X, Y to color and
 ;; returns false if there was a problem. Important: this function does not use the
@@ -252,25 +379,53 @@ setpencolor:
 drawpixel:
     push bp
     mov bp, sp
+    
     push di
-    push ax
+    push si
     push cx
     push dx
+    push bx
     
-    mov bh, 0
+    mov ax, [bp+6]  ; ax = x
+    mul bbp         ; ax *= bits/pixel
+    mov si, ax      ; si = ax
+    
+    mov ax, xRes    ; ax = width
+    mul bbp         ; ax *= bits/pixel  (guaranteed 16-bit)
+    mov bx, [bp+4]
+    mul bx          ; ax *= y
+    add ax, si      ; ax += si
+    adc dx, 0       ; result from previous mult: if overflow, put in dx
+    
+    mov cx, gran
+    test cx, cx ; if it's zero (some modes don't set it)
+    jz .dp_1    ; certainly don't divide by it!
+        div cx
+        xchg ax, dx ; remainder in ax, result in dx
+    .dp_1:
+    mov si, ax
+    
+    mov ax, 4F05h   ; window control
+    xor bx, bx
+    call [DWORD PTR fnptr] ; magic
+    
+    mov es, winA
+    
+    mov ah, 0
     mov al, PENCOLOR
-    mov cx, [bp+6]
-    mov dx, [bp+4]
-    mov ah, 0Ch  ; draw pixel
-    int 10h
+    mov BYTE PTR es:[si], al    ; draw the pixel
+    mov ax, 1
     
+    pop bx
     pop dx
     pop cx
-    pop ax
+    pop si
     pop di
+    
     mov sp, bp
     pop bp
-	ret
+    ret
+
 ;;bool AL DRAWLINE(int X, int Y, int X2, int Y2)
 ;; Using the pen color and the mode you already selected this function draws a
 ;; general line from the two coordinates in any direction. This is a general purpose
@@ -331,8 +486,7 @@ drawline:
         
         mov ax, [bp+10] ; x0
         cmp [bp+6], ax  ; x1 == x0
-        je .dl_break
-        jmp .dl_nope    ; jne
+        jne .dl_nope
             mov ax, [bp+8]  ; y0
             cmp [bp+4], ax  ; y1 == y0
             je .dl_break
@@ -355,13 +509,12 @@ drawline:
     jmp .dl_loop
     .dl_break:
     
-	
     pop dx
     pop cx
     pop bx
     pop ax
-	mov sp, bp
-	pop bp
-	ret
-	
+    mov sp, bp
+    pop bp
+    ret
+    
 END start
