@@ -2,7 +2,7 @@
 .model huge
 .stack 100h
 .data
-	PENCOLOR db 0
+	PENCOLOR db 1100b
 
 .data?
     buffer db 100 DUP(?)
@@ -12,9 +12,9 @@ start:
 	mov ax, @data
 	mov ds, ax
 	
-	mov ah, 0
-	mov al, 13
+	push 101h
 	call setmode
+	add sp, 2
 	;mov ah, 10
 	;push 1
 	;push 0
@@ -46,12 +46,23 @@ start:
 	
 	mov al, 1110b
     call setpencolor
-	push 10
+	
+    push 10
 	push 30
 	push 40
 	push 35
 	call drawline
-	add bp, 8
+	add sp, 8
+	
+	mov al, 1100b
+	call setpencolor
+	
+	push 50
+	push 100
+	push 30
+	push 200
+	call drawline
+	add sp, 8
 	
 	;mov al, 1100b
 	;call setpencolor
@@ -203,15 +214,18 @@ PrintInt:
 ;; bool AL SETMODE(int AH)
 ;; permits user to set to some mode; if not work, autoreset to standard text mode,
 ;; return false
-
-;; change screen mode 
-	;; mov ah 0
-;; this is the mode it will change to
 setmode:
-	;mov al, ah    ; wat?
-	mov al, 13h
-	mov ah, 0
+    push bp
+    mov bp, sp
+    push bx
+    
+	mov ax, 4F02h
+	mov bx, [bp+4]
 	int 10h
+	
+	pop bx
+	mov sp, bp
+	pop bp
 	ret
 ;; bool AL SETPENCOLOR(int COLOR)
 ;; By providing the color number as a parameter the API will remember that you are
@@ -221,7 +235,7 @@ setmode:
 setpencolor:
 	push bp
 	mov bp, sp
-
+	
 	;call getInt 		;which stores stuff in al
 	mov PENCOLOR, al
 	;; cmp blah
@@ -239,6 +253,9 @@ drawpixel:
     push bp
     mov bp, sp
     push di
+    push ax
+    push cx
+    push dx
     
     mov bh, 0
     mov al, PENCOLOR
@@ -247,6 +264,9 @@ drawpixel:
     mov ah, 0Ch  ; draw pixel
     int 10h
     
+    pop dx
+    pop cx
+    pop ax
     pop di
     mov sp, bp
     pop bp
@@ -260,63 +280,86 @@ drawline:
     push bp
     mov bp, sp
     
-    sub sp, 6
+    sub sp, 6   ; make space
     
-    mov cx, [bp+6]  ; x1
+    push ax
+    push bx
+    push cx
+    push dx
+    
+    mov ax, [bp+6]  ; x1
     mov bx, [bp+10] ; x0
-    sub cx, bx      ; delta x
+    sub ax, bx      ; delta x
+    mov [bp], ax    ; delta x: [bp]
     
     mov ax, [bp+4]  ; y1
-    mov bx, [bp+8]  ; cy = y
+    mov bx, [bp+8]  ; y0
     sub ax, bx      ; delta y
+    mov [bp-2], ax   ; delta y: [bp-2]
     
-    mov dx, 0   ; div
+    mov ax, [bp]    ; ax = delta x
+    cmp ax, 0
+    jle .dl_xpos    ; if x0 < x1
+        mov cx, 1   ;   sx =  1
+        jmp .dl_y   ; else
+    .dl_xpos:
+    mov cx, -1      ;   sx = -1
+    neg ax
+    mov [bp], ax
     
-    idiv cx ; ax=int(ax/cx)  dx=reminder(ax/cx)
-    mov cx, [bp+6]  ; cx = x
-    ;mov ax, 0   ; error
+    .dl_y:
+    mov ax, [bp-2]
+    cmp ax, 0
+    jle .dl_ypos    ; if y0 < y1
+        mov dx, 1   ;   sy =  1
+        neg ax      ;   negate and rewrite
+        mov [bp-2], ax
+        jmp .dl_next; else
+    .dl_ypos:
+    mov dx, -1      ;   sy = -1
     
-;     function line(x0, x1, y0, y1)
-;     int deltax := x1 - x0
-;     int deltay := y1 - y0
-;     real error := 0
-;     real deltaerr := abs (deltay / deltax)    // Assume deltax != 0 (line is not vertical),
-;           // note that this division needs to be done in a way that preserves the fractional part
-;     int y := y0
-;     for x from x0 to x1
-;         plot(x,y)
-;         error := error + deltaerr
-;         if error >= 0.5 then
-;             y := y + 1
-;             error := error - 1.0
-    push [bp+2] ; set x1
-    push ax ; set error threshold [sp+2]
-    push dx ; set error step [sp]
-    mov dx, 0
+    .dl_next:
+    mov ax, [ bp ]  ; ax = delta x
+    add ax, [bp-2]  ; ax -= delta y
+    mov [bp-4], ax  ; error: [bp-4]
+    
     .dl_loop:
-        ; save your registers
-        push ax ; ???
-        push dx ; error
-        push cx ; x
-        push bx ; y
+        push [bp+10]
+        push [bp+8]
         call drawpixel
-        pop bx
-        pop cx
-        pop dx
-        pop ax
+        add sp, 4    ; pop dem two (cleanup)
         
-        add dx, [bp-4]   ; add errorstep to error
-        cmp dx, [bp-2]   ; compare the new error to the error_threshold
-        jl .dl_skip ; if error >= error_threshold
-            inc bx  ; y++
-            sub dx, [bp-2]    ; error-=error_thresh
-        .dl_skip:
-        inc cx  ; x++
-        cmp cx, [ bp ]  ; if x < x1
-            jl .dl_loop ; loop
+        mov ax, [bp+10] ; x0
+        cmp [bp+6], ax  ; x1 == x0
+        je .dl_break
+        jmp .dl_nope    ; jne
+            mov ax, [bp+8]  ; y0
+            cmp [bp+4], ax  ; y1 == y0
+            je .dl_break
+        .dl_nope:
+        
+        mov ax, [bp-4]  ; e2 = err
+        shl ax, 1       ; e2 = err*2
+        mov bx, [bp-2]  ; dy
+        cmp ax, bx      ; if e2 > -dy
+        jle dl_skipy
+            add [bp-4], bx  ; err -= dy
+            add [bp+10], cx ; x0 += sx
+        dl_skipy:
+        mov bx, [ bp ]  ; dx
+        cmp ax, bx      ; if e2 < dx
+        jge dl_skipx
+            add [bp-4], bx  ; err += dx
+            add [bp+8], dx  ; y0 += sy
+        dl_skipx:
+    jmp .dl_loop
+    .dl_break:
     
-    
-	pop di 			; cleanup etc
+	
+    pop dx
+    pop cx
+    pop bx
+    pop ax
 	mov sp, bp
 	pop bp
 	ret
