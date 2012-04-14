@@ -15,14 +15,41 @@ start:
 	mov ah, 0
 	mov al, 13
 	call setmode
-	mov ah, 10
+	;mov ah, 10
 	call setpencolor
-	push 5
-	push 5
-	call drawpixel
-	push 7
-	push 5
-	call drawpixel
+	;push 1
+	;push 0
+	;call drawpixel
+	;push 2
+	;push 0
+	;call drawpixel
+	;push 4
+	;push 0
+	;call drawpixel
+	;push 8
+	;push 0
+	;call drawpixel
+	;push 16
+	;push 0
+	;call drawpixel
+	;push 32
+	;push 0
+	;call drawpixel
+	;push 64
+	;push 0
+	;call drawpixel
+	;push 128
+	;push 0
+	;call drawpixel
+	;push 256
+	;push 0
+	;call drawpixel
+	
+	push 10
+	push 10
+	push 30
+	push 20
+	call drawline
 	
 .end:
     mov ah, 4ch
@@ -221,18 +248,60 @@ drawline:
     push bp
     mov bp, sp
     
+    mov ax, 0   ; get ready for division
     
+    mov cx, [bp+4]  ; x2
+    mov bx, [bp]    ; x1
+    sub cx, bx      ; delta x
     
-    push ax
-    push bx
-    push cx
-    push dx
-    ; TODO: coordinates
-    call drawpixel
-    pop dx
-    pop cx
-    pop bx
-    pop ax
+    mov ax, [bp+6]  ; y2
+    mov bx, [bp+2]  ; y
+    sub ax, bx      ; delta y
+    
+    mov dx, 0   ; div
+    
+    idiv cx ; ax=int(ax/cx)  dx=reminder(ax/cx)
+    ;mov ax, 0   ; error
+    
+;     function line(x0, x1, y0, y1)
+;     int deltax := x1 - x0
+;     int deltay := y1 - y0
+;     real error := 0
+;     real deltaerr := abs (deltay / deltax)    // Assume deltax != 0 (line is not vertical),
+;           // note that this division needs to be done in a way that preserves the fractional part
+;     int y := y0
+;     for x from x0 to x1
+;         plot(x,y)
+;         error := error + deltaerr
+;         if error >= 0.5 then
+;             y := y + 1
+;             error := error - 1.0
+    push [bp+4] ; set x2
+    push ax ; set error threshold [sp+2]
+    push dx ; set error step [sp]
+    mov dx, 0
+    .dl_loop:
+        ; save your registers
+        push ax ; ???
+        push dx ; error
+        push cx ; x
+        push bx ; y
+        call drawpixel
+        pop bx
+        pop cx
+        pop dx
+        pop ax
+        
+        add dx, [bp-6]   ; add errorstep to error
+        cmp dx, [bp-4]   ; compare the new error to the error_threshold
+        jl .dl_skip
+            inc bx  ; y++
+            sub dx, [bp-4]    ; error-=error_thresh
+        ; put error away, take coords out
+        .dl_skip:
+        inc cx  ; x++
+        cmp cx, [bp-2]  ; if x < x1
+            jl .dl_loop ; loop
     
     
 	pop di 			; cleanup etc
