@@ -19,6 +19,7 @@ glClear(GL_COLOR_BUFFER_BIT); //Clear the colour buffer
 glLoadIdentity(); // Load the Identity Matrix to reset our drawing locations  
 glTranslatef(0.0f, 0.0f, -5.0f); // <a title="Push" href="http://www.swiftless.com/tutorials/opengl/pop_and_push_matrices.html">Push</a> eveything 5 units back into the scene, otherwise we won't see the primitive  
 renderPrimitive(); // Render the primitive  
+glutWireSphere(2.0f) //make a sun
 glFlush(); // Flush the OpenGL buffers to the window  
 }  
   
