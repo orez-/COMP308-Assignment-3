@@ -40,6 +40,10 @@ start:
     call draw_flower
     add sp, 4   ; sent in above
     
+    push 888
+    call PrintInt
+    add sp, 2
+    
 .end:
     mov ah, 4ch
     int 21h
@@ -52,46 +56,59 @@ draw_flower:
     push bx
     push cx
     push dx
+    push di
+    push si
     
     
+    ;push bp
+    ;call PrintInt
+    ;add sp, 2
     
-    mov ax, 1
+    mov cx, 1
     .flower:
-        inc ax  ; ax++
+        inc cx  ; cx++
         
-        mov bx, ax
-        push ax ; parameter
+        push cx ; parameter
         call setpencolor
         add sp, 2   ; eat parameter
-        mov ax, bx
         
-        mov bx, OFFSET xcords   ; get the start of the list
-        add bx, ax              ; xcords[ax]
-        xor ch, ch
-        mov cl, [bx]            ; cx = xcords[ax]
-        add cx, [bp+6]          ; cx += x
-        
-        mov bx, OFFSET ycords
-        add bx, ax
-        xor dh, dh
-        mov dl, [bx]
-        add dx, [bp+4]
-        
-        
-        push dx
-        call PrintInt
-        add sp, 2
-        
+        push cx
+        push [bp+6]
+        push [bp+4]
         
         push [bp+6]
         push [bp+4]
-        push cx
-        push dx
-        ;call drawline
+        
+        mov si, OFFSET xcords   ; get the start of the list
+        add si, cx              ; xcords[cx]
+        mov al, [si]            ; al = xcords[cx]
+        cbw                     ; byte to word on al
+        add ax, [bp+6]          ; ax += x
+        push ax
+        
+        mov si, OFFSET ycords
+        add si, cx
+        mov al, [si]
+        cbw
+        add ax, [bp+4]
+        push ax
+        
+        call drawline
         add sp, 8
+        
+        pop [bp+4]
+        pop [bp+6]
+        pop cx
+        
         cmp ax, 0Dh ; done!
     jl .flower
     
+    push 777
+    call PrintInt
+    add sp, 2
+    
+    pop si
+    pop di
     pop dx
     pop cx
     pop bx
