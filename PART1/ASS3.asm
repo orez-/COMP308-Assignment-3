@@ -9,6 +9,13 @@
     bbp  dw 2
     gran dw 0
     fnptr dw 0
+    
+    xcords db 0, 0, -50, -50, -50, -25,   0,  25,  50, 50, 50, 25,  0, -25
+    ycords db 0, 0,  25,   0, -25, -50, -50, -50, -25,  0, 25, 50, 50,  50
+    ;xcords db 50,  50,  50,  50,  50,  50,  50,  50, 50, 50, 50, 50,  50
+    ;ycords db 50,  50,  50,  50,  50,  50,  50,  50, 50, 50, 50, 50,  50
+    ;xcords db 1,  2,  3,  4,  5,  6,  7,  8, 9, 10, 11, 12,  13
+    ;ycords db 0,  0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0,  0
 
 .data?
     buffer db 256 DUP(?)
@@ -18,145 +25,81 @@ start:
     mov ax, @data
     mov ds, ax
     
+    call GetInt ; x
+    xor ah, ah
+    push ax ; parameter to draw_flower
+    
+    call GetInt ; y
+    xor ah, ah
+    push ax ; parameter to draw_flower
+    
     push 101h
     call setmode
     add sp, 2
     
-    push 1
-    call setpencolor
-    add sp, 2
-    
-    push 200
-    push 100
-    push 150
-    push 125
-    call drawline
-    add sp, 8
-    
-    push 2
-    call setpencolor
-    add sp, 2
-    
-    push 200
-    push 100
-    push 150
-    push 100
-    call drawline
-    add sp, 8
-    
-    push 3
-    call setpencolor
-    add sp, 2
-    
-    push 200
-    push 100
-    push 150
-    push  75
-    call drawline
-    add sp, 8
-    
-    push 4
-    call setpencolor
-    add sp, 2
-    
-    push 200
-    push 100
-    push 175
-    push 50
-    call drawline
-    add sp, 8
-    
-    push 5
-    call setpencolor
-    add sp, 2
-    
-    push 200
-    push 100
-    push 200
-    push 50
-    call drawline
-    add sp, 8
-    
-    push 6
-    call setpencolor
-    add sp, 2
-    
-    push 200
-    push 100
-    push 225
-    push 50
-    call drawline
-    add sp, 8
-    
-    push 7
-    call setpencolor
-    add sp, 2
-    
-    push 200
-    push 100
-    push 250
-    push 75
-    call drawline
-    add sp, 8
-    
-    push 8
-    call setpencolor
-    add sp, 2
-    
-    push 200
-    push 100
-    push 250
-    push 100
-    call drawline
-    add sp, 8
-    
-    push 9
-    call setpencolor
-    add sp, 2
-    
-    push 200
-    push 100
-    push 250
-    push 125
-    call drawline
-    add sp, 8
-    
-    push 0Ah
-    call setpencolor
-    add sp, 2
-    
-    push 200
-    push 100
-    push 225
-    push 150
-    call drawline
-    add sp, 8
-    
-    push 0Bh
-    call setpencolor
-    add sp, 2
-    
-    push 200
-    push 100
-    push 200
-    push 150
-    call drawline
-    add sp, 8
-    
-    push 0Ch
-    call setpencolor
-    add sp, 2
-    
-    push 200
-    push 100
-    push 175
-    push 150
-    call drawline
-    add sp, 8
+    call draw_flower
+    add sp, 4   ; sent in above
     
 .end:
     mov ah, 4ch
     int 21h
+
+draw_flower:
+    push bp
+    mov bp, sp
+    
+    push ax
+    push bx
+    push cx
+    push dx
+    
+    
+    
+    mov ax, 1
+    .flower:
+        inc ax  ; ax++
+        
+        mov bx, ax
+        push ax ; parameter
+        call setpencolor
+        add sp, 2   ; eat parameter
+        mov ax, bx
+        
+        mov bx, OFFSET xcords   ; get the start of the list
+        add bx, ax              ; xcords[ax]
+        xor ch, ch
+        mov cl, [bx]            ; cx = xcords[ax]
+        add cx, [bp+6]          ; cx += x
+        
+        mov bx, OFFSET ycords
+        add bx, ax
+        xor dh, dh
+        mov dl, [bx]
+        add dx, [bp+4]
+        
+        
+        push dx
+        call PrintInt
+        add sp, 2
+        
+        
+        push [bp+6]
+        push [bp+4]
+        push cx
+        push dx
+        ;call drawline
+        add sp, 8
+        cmp ax, 0Dh ; done!
+    jl .flower
+    
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    
+    mov sp, bp
+    pop bp
+    ret
 
 getche:
     mov ah, 1       ; move 'read char from stdin' to ah
@@ -172,6 +115,7 @@ putch:
     mov ah, 6       ; 6 = console output
     int 21h
     
+    mov sp, bp
     pop bp          ; put bp back in place
     ret
 
@@ -219,6 +163,7 @@ puts:
     jmp .puts_char      ; loop
     
     .puts_end:
+    mov sp, bp
     pop bp
     ret
 
@@ -258,6 +203,10 @@ PrintInt:
     
     sub sp, 6 ; make room for your output string
     push di   ; remember the old di
+    push ax
+    push bx
+    push cx
+    push dx
     
     mov ax, [bp+4]
     lea di, [bp-1]    ; offset to end of buffer
@@ -281,8 +230,21 @@ PrintInt:
     push di
     call puts   ; print the string
     add sp, 2
+    
+    push 13     ; print a carriage return
+    call putch
+    add sp, 2
+    push 10     ; print a newline
+    call putch
+    add sp, 2
+    
+    
     pop ds      ; set it back
     
+    pop dx
+    pop cx
+    pop bx
+    pop ax
     pop di      ; cleanup etc
     mov sp, bp
     
@@ -369,6 +331,7 @@ setpencolor:
     mov PENCOLOR, al    ; set PENCOLOR to that variable
     mov ax, 1           ; return true: no errors!
     
+    mov sp, bp
     pop bp
     ret
 
