@@ -10,12 +10,8 @@
     gran dw 0
     fnptr dw 0
     
-    xcords db 0, 0, -50, -50, -50, -25,   0,  25,  50, 50, 50, 25,  0, -25
-    ycords db 0, 0,  25,   0, -25, -50, -50, -50, -25,  0, 25, 50, 50,  50
-    ;xcords db 50,  50,  50,  50,  50,  50,  50,  50, 50, 50, 50, 50,  50
-    ;ycords db 50,  50,  50,  50,  50,  50,  50,  50, 50, 50, 50, 50,  50
-    ;xcords db 1,  2,  3,  4,  5,  6,  7,  8, 9, 10, 11, 12,  13
-    ;ycords db 0,  0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0,  0
+    xcord db "Enter an x coordinate (like 200):",0
+    ycord db "Enter a  y coordinate (like 100):",0
 
 .data?
     buffer db 256 DUP(?)
@@ -25,77 +21,214 @@ start:
     mov ax, @data
     mov ds, ax
     
-    call GetInt ; x
-    xor ah, ah
-    push ax ; parameter to draw_flower
+    mov ax, OFFSET xcord
+    push ax
+    call puts
+    add sp, 2
     
-    call GetInt ; y
+    call GetInt
     xor ah, ah
-    push ax ; parameter to draw_flower
+    push ax
+    
+    mov ax, OFFSET ycord
+    push ax
+    call puts
+    add sp, 2
+    
+    call GetInt
+    xor ah, ah
+    push ax
     
     push 101h
     call setmode
     add sp, 2
     
-    call draw_flower
-    add sp, 4   ; sent in above
+    pop dx
+    pop cx
+    
+    push 1
+    call setpencolor
+    add sp, 2
+    
+    push cx
+    push dx
+    push 150
+    push 125
+    call drawline
+    add sp, 8
+    
+    push 2
+    call setpencolor
+    add sp, 2
+    
+    push cx
+    push dx
+    push 150
+    push 100
+    call drawline
+    add sp, 8
+    
+    push 3
+    call setpencolor
+    add sp, 2
+    
+    push cx
+    push dx
+    push 150
+    push  75
+    call drawline
+    add sp, 8
+    
+    push 4
+    call setpencolor
+    add sp, 2
+    
+    push cx
+    push dx
+    push 175
+    push 50
+    call drawline
+    add sp, 8
+    
+    push 5
+    call setpencolor
+    add sp, 2
+    
+    push cx
+    push dx
+    push 200
+    push 50
+    call drawline
+    add sp, 8
+    
+    push 6
+    call setpencolor
+    add sp, 2
+    
+    push cx
+    push dx
+    push 225
+    push 50
+    call drawline
+    add sp, 8
+    
+    push 7
+    call setpencolor
+    add sp, 2
+    
+    push cx
+    push dx
+    push 250
+    push 75
+    call drawline
+    add sp, 8
+    
+    push 8
+    call setpencolor
+    add sp, 2
+    
+    push cx
+    push dx
+    push 250
+    push 100
+    call drawline
+    add sp, 8
+    
+    push 9
+    call setpencolor
+    add sp, 2
+    
+    push cx
+    push dx
+    push 250
+    push 125
+    call drawline
+    add sp, 8
+    
+    push 0Ah
+    call setpencolor
+    add sp, 2
+    
+    push cx
+    push dx
+    push 225
+    push 150
+    call drawline
+    add sp, 8
+    
+    push 0Bh
+    call setpencolor
+    add sp, 2
+    
+    push cx
+    push dx
+    push 200
+    push 150
+    call drawline
+    add sp, 8
+    
+    push 0Ch
+    call setpencolor
+    add sp, 2
+    
+    push cx
+    push dx
+    push 175
+    push 150
+    call drawline
+    add sp, 8
+    
+    push 50
+    push 50
+    call makesmile
+    add sp, 4
     
 .end:
     mov ah, 4ch
     int 21h
 
-draw_flower:
+makesmile:
     push bp
     mov bp, sp
     
-    push ax
-    push bx
+    mov cx, [bp+6]
+    mov dx, [bp+4]
+    
+    add dx, 5
     push cx
     push dx
+    call drawpixel
     
+    add cx, 2
+    push cx
+    push dx
+    call drawpixel
     
+    add dx, 3
+    push cx
+    push dx
+    call drawpixel
     
-    mov ax, 1
-    .flower:
-        inc ax  ; ax++
-        
-        mov bx, ax
-        push ax ; parameter
-        call setpencolor
-        add sp, 2   ; eat parameter
-        mov ax, bx
-        
-        mov bx, OFFSET xcords   ; get the start of the list
-        add bx, ax              ; xcords[ax]
-        xor ch, ch
-        mov cl, [bx]            ; cx = xcords[ax]
-        add cx, [bp+6]          ; cx += x
-        
-        mov bx, OFFSET ycords
-        add bx, ax
-        xor dh, dh
-        mov dl, [bx]
-        add dx, [bp+4]
-        
-        
-        push dx
-        call PrintInt
-        add sp, 2
-        
-        
-        push [bp+6]
-        push [bp+4]
-        push cx
-        push dx
-        ;call drawline
-        add sp, 8
-        cmp ax, 0Dh ; done!
-    jl .flower
+    dec cx
+    push cx
+    push dx
+    call drawpixel
     
-    pop dx
-    pop cx
-    pop bx
-    pop ax
+    dec cx
+    push cx
+    push dx
+    call drawpixel
+    
+    dec cx
+    dec dx
+    push cx
+    push dx
+    call drawpixel
+    
+    add cx, 4
+    push cx
+    push dx
+    call drawpixel
     
     mov sp, bp
     pop bp
@@ -115,7 +248,6 @@ putch:
     mov ah, 6       ; 6 = console output
     int 21h
     
-    mov sp, bp
     pop bp          ; put bp back in place
     ret
 
@@ -163,7 +295,6 @@ puts:
     jmp .puts_char      ; loop
     
     .puts_end:
-    mov sp, bp
     pop bp
     ret
 
@@ -331,7 +462,6 @@ setpencolor:
     mov PENCOLOR, al    ; set PENCOLOR to that variable
     mov ax, 1           ; return true: no errors!
     
-    mov sp, bp
     pop bp
     ret
 
