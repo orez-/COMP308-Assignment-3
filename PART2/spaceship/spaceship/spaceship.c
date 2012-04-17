@@ -19,6 +19,15 @@ void renderStars(int numstars) {
     glEnd();
 }
 
+void renderAsteroid(float x, float y, float z) {
+    glPushMatrix(); // store the location
+    glTranslatef(x, y, z);  // move the center
+    glColor3f(0.5273f, 0.2578f, 0.1211f);
+    glutSolidSphere(1.0f, 20, 20); //make a sun
+    glPopMatrix();  // restore the location
+    
+}
+
 void renderShip(float x, float y, float z) {
     float scale;
     int i;
@@ -40,9 +49,9 @@ void renderShip(float x, float y, float z) {
             glVertex3f(scale*4, scale/2, 0);    // fin top
             glVertex3f(scale*4.5, scale/2, 0);  // fin end
             glVertex3f(scale*4.5, 0, 0);        // fin end
-            glVertex3f(scale*5, 0, 0);          // back top
+            glVertex3f(scale*5, -scale*.2, 0);          // back top
             glVertex3f(scale*5, -scale*1.8, 0); // back right
-            glVertex3f(scale*3, -scale*2, 0);   // back bottom
+            glVertex3f(scale*4, -scale*2, 0);   // back bottom
         glEnd();
         mode = GL_LINE_LOOP;
         glColor3f(0.0f, 0.0f, 0.0f);
@@ -50,8 +59,7 @@ void renderShip(float x, float y, float z) {
     glPopMatrix();
 }
 
-void renderSun(float x, float y, float z)
-{
+void renderSun(float x, float y, float z) {
     glPushMatrix(); // store the location
     glTranslatef(x, y, z);  // move the center
     glColor3f(1.0f, 1.0f, 0.0f);
@@ -64,13 +72,14 @@ void display (void) {
     glClear(GL_COLOR_BUFFER_BIT); //Clear the colour buffer
     glLoadIdentity(); // Load the Identity Matrix to reset our drawing locations  
     glTranslatef(0.0f, 0.0f, -5.0f);
-    renderStars(30);
-    renderSun(-7, 4,-20);
+    renderStars(20);
+    renderSun(7, 4,-20);
+    renderAsteroid(-1.75, -1.25, 0);
     renderShip(0,0,0);
     glFlush(); // Flush the OpenGL buffers to the window  
 }
 
-void reshape (int width, int height) {  
+void reshape (int width, int height) {
     glViewport(0, 0, (GLsizei)width, (GLsizei)height); // Set our viewport to the size of our window  
     glMatrixMode(GL_PROJECTION); // Switch to the projection matrix so that we can manipulate how our scene is viewed  
     glLoadIdentity(); // Reset the projection matrix to the identity matrix so that we don't get any artifacts (cleaning up)  
@@ -89,4 +98,4 @@ int main (int argc, char **argv) {
     glutDisplayFunc(display); // Tell GLUT to use the method "display" for rendering  
     glutReshapeFunc(reshape); // Tell GLUT to use the method "reshape" for rendering  
     glutMainLoop(); // Enter GLUT's main loop  
-} 
+}
