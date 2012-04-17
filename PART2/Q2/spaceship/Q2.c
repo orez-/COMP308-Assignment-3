@@ -5,8 +5,13 @@
 #include <GL/glut.h> // Include the GLUT header file  
 
 GLuint bgr;
+
 GLuint ast_tex;
 GLuint ast_sph;
+
+GLuint sun_tex;
+GLuint sun_sph;
+
 GLUquadricObj *sphere;
 
 float random(int N) {
@@ -25,6 +30,15 @@ void renderStars(int numstars) {
     glEnd();
 }
 
+void renderSun(float x, float y, float z) {
+    glPushMatrix(); // store the location
+    glTranslatef(x, y, z);  // move the center
+    glColor3f(1.0f, 1.0f, 0.0f);
+    //glutSolidSphere(1.0f, 20, 20); //make a sun
+    glCallList(sun_sph);
+    glPopMatrix();  // restore the location
+}
+
 void renderAsteroid(float x, float y, float z) {
     glPushMatrix(); // store the location
     glLoadIdentity();
@@ -32,7 +46,7 @@ void renderAsteroid(float x, float y, float z) {
     glTranslatef(0, 5.0f, 0.0f);
     glTranslatef(x, -z, y);  // move the center
     glColor3f(1.0f, 1.0f, 1.0f);    //0.5273f, 0.2578f, 0.1211f);
-    glCallList(ast_tex);    // this looks extremely wrong so if something breaks look here
+    glCallList(ast_sph);    // this looks extremely wrong so if something breaks look here
     glPopMatrix();  // restore the location
 }
 
@@ -64,14 +78,6 @@ void renderShip(float x, float y, float z) {
         glColor3f(0.0f, 0.0f, 0.0f);
     }
     glPopMatrix();
-}
-
-void renderSun(float x, float y, float z) {
-    glPushMatrix(); // store the location
-    glTranslatef(x, y, z);  // move the center
-    glColor3f(1.0f, 1.0f, 0.0f);
-    glutSolidSphere(1.0f, 20, 20); //make a sun
-    glPopMatrix();  // restore the location
 }
   
 void display (void) {
@@ -140,6 +146,23 @@ GLuint bgTexture(const char* filename, int width, int height, GLenum format)
     return bg;
 }
 
+void sphereMap(GLuint* sph, GLuint* tex)
+{
+    sphere = gluNewQuadric();
+    gluQuadricDrawStyle(sphere, GLU_FILL);
+    gluQuadricTexture(sphere, GL_TRUE); // should texture
+    gluQuadricNormals(sphere, GL_SMOOTH);
+    
+    *sph = glGenLists(1);
+    glNewList(*sph, GL_COMPILE);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, *tex);
+        gluSphere(sphere, 1.0, 20, 20);
+        glDisable(GL_TEXTURE_2D);
+    glEndList();
+    gluDeleteQuadric(sphere);
+}
+
 int main (int argc, char **argv) {
     srand(time(NULL));  // seed the random
     
@@ -150,20 +173,10 @@ int main (int argc, char **argv) {
     glutCreateWindow ("Space"); // Set the title for the window  
     bgr = bgTexture("stars1.bmp", 1460, 1024, GL_RGB);
     ast_tex = bgTexture("asteroid.bmp", 1024, 512, GL_BGR);
-
-    sphere = gluNewQuadric();
-    gluQuadricDrawStyle(sphere, GLU_FILL);
-    gluQuadricTexture(sphere, GL_TRUE); // should texture
-    gluQuadricNormals(sphere, GL_SMOOTH);
-
-    ast_sph = glGenLists(1);
-    glNewList(ast_tex, GL_COMPILE);
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, ast_tex);
-        gluSphere(sphere, 1.0, 20, 20);
-        glDisable(GL_TEXTURE_2D);
-    glEndList();
-    gluDeleteQuadric(sphere);
+    sun_tex = bgTexture("sun.bmp", 512, 256, GL_BGR);
+    
+    sphereMap(&ast_sph, &ast_tex);
+    sphereMap(&sun_sph, &sun_tex);
 
     glutDisplayFunc(display); // Tell GLUT to use the method "display" for rendering
     glutReshapeFunc(reshape); // Tell GLUT to use the method "reshape" for rendering
