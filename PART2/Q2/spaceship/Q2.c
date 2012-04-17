@@ -35,7 +35,7 @@ void renderShip(float x, float y, float z) {
     int i;
     int mode;
     mode = GL_POLYGON;
-    scale = 0.1f;
+    scale = 0.5f;
     glPushMatrix();
     glTranslatef(x, y, z);
     //glColor3f(0.8f, 0.8f, 0.8f);
