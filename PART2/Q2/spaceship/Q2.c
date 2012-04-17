@@ -4,7 +4,8 @@
 #include <GL/glew.h> // Include the GLEW header file  
 #include <GL/glut.h> // Include the GLUT header file  
 
-GLuint bgr;
+GLuint bgr_tex;
+GLuint uss_tex;
 
 GLuint ast_tex;
 GLuint ast_sph;
@@ -51,46 +52,50 @@ void renderAsteroid(float x, float y, float z) {
 }
 
 void renderShip(float x, float y, float z) {
-    float scale;
+    float scale=0.5f;
+    float imgsx = 1/5.0;
+    float imgsy = 1/2.5;
     int i;
-    int mode;
-    mode = GL_POLYGON;
-    scale = 0.5f;
+    int mode = GL_POLYGON;
     glPushMatrix();
     glTranslatef(x, y, z);
     glColor3f(1.0f, 1.0f, 1.0f);
-    for(i=0; i<2; i++)
-    {
-        glBegin(mode);
-            glVertex3f(scale, -scale*2, 0);     // bottom front
-            glVertex3f(0, -scale*1.5, 0);       // frontmost point
-            glVertex3f(0, -scale, 0);           // another frontmost
-            glVertex3f(scale*2, 0, 0);          // top
-            glVertex3f(scale*3, 0, 0);          // fin start
-            glVertex3f(scale*4, scale/2, 0);    // fin top
-            glVertex3f(scale*4.5, scale/2, 0);  // fin end
-            glVertex3f(scale*4.5, 0, 0);        // fin end
-            glVertex3f(scale*5, -scale*.2, 0);  // back top
-            glVertex3f(scale*5, -scale*1.8, 0); // back right
-            glVertex3f(scale*4, -scale*2, 0);   // back bottom
-        glEnd();
-        mode = GL_LINE_LOOP;
-        glColor3f(0.0f, 0.0f, 0.0f);
-    }
+
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, uss_tex);
+    
+    /**
+    glBegin(GL_QUADS);
+        glTexCoord2d(0.0,1.0); glVertex2d(0,0);
+        glTexCoord2d(1.0,1.0); glVertex2d(scale*5,0);
+        glTexCoord2d(1.0,0.0); glVertex2d(scale*5,-scale*2.5);
+        glTexCoord2d(0.0,0.0); glVertex2d(0,-scale*2.5);
+    glEnd();/**/
+    /**/
+    glBegin(GL_POLYGON);
+        glTexCoord2d(imgsx, 1-imgsy*2.5); glVertex3f(scale, -scale*2.5, 0);     // bottom front
+        glTexCoord2d(0, 1-imgsy*2); glVertex3f(0, -scale*2, 0);       // frontmost point
+        glTexCoord2d(0, 1-imgsy*1.5); glVertex3f(0, -scale*1.5, 0);           // another frontmost
+        glTexCoord2d(imgsx*2, 1-imgsy/2); glVertex3f(scale*2, -scale/2, 0);          // top
+        glTexCoord2d(imgsx*4.5, 1-imgsy/2); glVertex3f(scale*4.5, -scale/2, 0);        // fin end
+        glTexCoord2d(imgsx*5, 1-imgsy*.7); glVertex3f(scale*5, -scale*.7, 0);  // back top
+        glTexCoord2d(imgsx*5, 1-imgsy*2.3); glVertex3f(scale*5, -scale*2.3, 0); // back right
+        glTexCoord2d(imgsx*4, 1-imgsy*2.5); glVertex3f(scale*4, -scale*2.5, 0);   // back bottom
+    glEnd();
+    glBegin(GL_POLYGON);
+        glTexCoord2d(imgsx*3, 1-imgsy/2); glVertex3f(scale*3, -scale/2, 0);         // fin start
+        glTexCoord2d(imgsx*4, 1); glVertex3f(scale*4, 0, 0);                        // fin top
+        glTexCoord2d(imgsx*4.5, 1); glVertex3f(scale*4.5, 0, 0);                    // fin end
+        glTexCoord2d(imgsx*4.5, 1-(imgsy/2)); glVertex3f(scale*4.5, -scale/2, 0);   // fin end
+    glEnd();/**/
+    glDisable(GL_TEXTURE_2D);
     glPopMatrix();
 }
-  
-void display (void) {
-    //glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Clear the background of our window to black  
-    
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT); //Clear the colour buffer
-    glLoadIdentity(); // Load the Identity Matrix to reset our drawing locations  
-    glTranslatef(0.0f, 0.0f, -5.0f);
-    
+
+void renderBackground()
+{
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, bgr);
-    //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1460, 1024, 0, GL_BGRA, GL_UNSIGNED_BYTE, 1460*1024);
+    glBindTexture(GL_TEXTURE_2D, bgr_tex);
     
     glBegin( GL_QUADS );
         glTexCoord2d(0.0,0.0); glVertex2d(-5.0,-5.0);
@@ -99,11 +104,19 @@ void display (void) {
         glTexCoord2d(0.0,1.0); glVertex2d(-5.0,5.0);
     glEnd();
     glDisable(GL_TEXTURE_2D);   // color correctly
+}
+
+void display (void) {
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Clear the background of our window to black  
+    glClear(GL_COLOR_BUFFER_BIT); //Clear the colour buffer
+    glLoadIdentity(); // Load the Identity Matrix to reset our drawing locations  
+    glTranslatef(0.0f, 0.0f, -5.0f);
     
+    renderBackground();
     renderStars(20);
     renderSun(7, 4,-20);
     renderAsteroid(-1.75, -1.25, 0);
-    renderShip(0,0,0);
+    renderShip(-1,0,0);
     glFlush(); // Flush the OpenGL buffers to the window  
 }
 
@@ -115,10 +128,11 @@ void reshape (int width, int height) {
     glMatrixMode(GL_MODELVIEW); // Switch back to the model view matrix, so that we can start drawing shapes correctly  
 }
 
-GLuint bgTexture(const char* filename, int width, int height, GLenum format)
+GLuint bgTexture(const char* filename, int width, int height, int clamp, GLenum format)
 {
     GLuint bg;
     void* data; // byte-buffer amirite
+    int bytedepth = 3;
     FILE* file = fopen(filename, "rb");
     if(file == NULL)
     {
@@ -126,8 +140,8 @@ GLuint bgTexture(const char* filename, int width, int height, GLenum format)
         return (void*)NULL;
     }
     
-    data = malloc(width*height*3);
-    fread(data, width*height*3, 1, file);
+    data = malloc(width*height*bytedepth);
+    fread(data, width*height*bytedepth, 1, file);
     fclose(file);
     
     glGenTextures(1, &bg);
@@ -137,10 +151,10 @@ GLuint bgTexture(const char* filename, int width, int height, GLenum format)
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST );
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
     
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, clamp?GL_CLAMP:GL_REPEAT);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, clamp?GL_CLAMP:GL_REPEAT);
     
-    gluBuild2DMipmaps(GL_TEXTURE_2D, 3, width, height, format, GL_UNSIGNED_BYTE, data);
+    gluBuild2DMipmaps(GL_TEXTURE_2D, bytedepth, width, height, format, GL_UNSIGNED_BYTE, data);
     
     free(data);
     return bg;
@@ -171,9 +185,10 @@ int main (int argc, char **argv) {
     glutInitWindowSize (500, 500); // Set the width and height of the window  
     glutInitWindowPosition (100, 100); // Set the position of the window  
     glutCreateWindow ("Space"); // Set the title for the window  
-    bgr = bgTexture("stars1.bmp", 1460, 1024, GL_RGB);
-    ast_tex = bgTexture("asteroid.bmp", 1024, 512, GL_BGR);
-    sun_tex = bgTexture("sun.bmp", 512, 256, GL_BGR);
+    bgr_tex = bgTexture("stars1.bmp", 1460, 1024, 0, GL_RGB);
+    uss_tex = bgTexture("spacelife2.bmp", 216, 107, 1, GL_BGR);
+    ast_tex = bgTexture("asteroid.bmp", 1024, 512, 0, GL_BGR);
+    sun_tex = bgTexture("sun.bmp", 512, 256, 0, GL_BGR);
     
     sphereMap(&ast_sph, &ast_tex);
     sphereMap(&sun_sph, &sun_tex);
