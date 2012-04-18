@@ -64,14 +64,6 @@ void renderShip(float x, float y, float z) {
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, uss_tex);
     
-    /**
-    glBegin(GL_QUADS);
-        glTexCoord2d(0.0,1.0); glVertex2d(0,0);
-        glTexCoord2d(1.0,1.0); glVertex2d(scale*5,0);
-        glTexCoord2d(1.0,0.0); glVertex2d(scale*5,-scale*2.5);
-        glTexCoord2d(0.0,0.0); glVertex2d(0,-scale*2.5);
-    glEnd();/**/
-    /**/
     glBegin(GL_POLYGON);
         glTexCoord2d(imgsx, 1-imgsy*2.5); glVertex3f(scale, -scale*2.5, 0);     // bottom front
         glTexCoord2d(0, 1-imgsy*2); glVertex3f(0, -scale*2, 0);       // frontmost point
@@ -87,7 +79,7 @@ void renderShip(float x, float y, float z) {
         glTexCoord2d(imgsx*4, 1); glVertex3f(scale*4, 0, 0);                        // fin top
         glTexCoord2d(imgsx*4.5, 1); glVertex3f(scale*4.5, 0, 0);                    // fin end
         glTexCoord2d(imgsx*4.5, 1-(imgsy/2)); glVertex3f(scale*4.5, -scale/2, 0);   // fin end
-    glEnd();/**/
+    glEnd();
     glDisable(GL_TEXTURE_2D);
     glPopMatrix();
 }
@@ -192,7 +184,7 @@ int main (int argc, char **argv) {
     
     sphereMap(&ast_sph, &ast_tex);
     sphereMap(&sun_sph, &sun_tex);
-
+    
     glutDisplayFunc(display); // Tell GLUT to use the method "display" for rendering
     glutReshapeFunc(reshape); // Tell GLUT to use the method "reshape" for rendering
     glutMainLoop(); // Enter GLUT's main loop
