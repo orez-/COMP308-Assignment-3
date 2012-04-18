@@ -5,6 +5,8 @@
 #include <GL/glut.h> // Include the GLUT header file  
 #include <GL/glaux.h> //JUST ADDED
 #include <windows.h> //JUST ADDED
+#include <Cg\cg.h>
+#include <Cg\cgGL.h>
 
 GLuint bgr_tex;
 GLuint uss_tex;
@@ -17,11 +19,14 @@ GLuint sun_sph;
 
 GLUquadricObj *sphere;
 
+/*
+
 //JUST ADDED this section
 CGcontext context = cgCreateContext(); 
-CGprofile profile = cgGLGetLatestProfile(CGGLenum profileType)
+CGGLenum profileType;
+CGprofile profile = cgGLGetLatestProfile(profileType);
 //where profileType is either CG_GL_VERTEX or CG_GL_FRAGMENT. 
-cgGLSetOptimalOptions(profile);
+//cgGLSetOptimalOptions(profile);
 
 CGprogram cgCreateProgramFromFile(
                         CGcontext context,
@@ -33,7 +38,7 @@ CGprogram cgCreateProgramFromFile(
 
 /*The argument programType can be either CG_OBJECT or CG_SOURCE. If it is CG_SOURCE, then the file is assumed to be an ASCII text file containing Cg source code
 */
-
+/*
 void cgGLLoadProgram(CGprogram program);
 void cgGLBindProgram(CGprogram program);
 
@@ -42,21 +47,22 @@ void cgGLBindProgram(CGprogram program);
 void cgGLSetStateMatrixParameter(CGparameter parameter,
                                  GLenum stateMatrixType,
                                  GLenum transform);
+*/
+/*
 
 //this stuff draws a triangle
-Struct C2E1v_Output {
-    Float4 position : POSITION;
-    Float4 color    : COLOR;
+struct VertOut {
+    float4 position : POSITION;
+    float4 color    : COLOR;
 };
 
-C2E1v_Output C2E1v_green(Float2 position : POSITION)
-
+VertOut C2E1v_green(Float2 position : POSITION)
 {
-    C2E1v_Output OUT;
+    VertOut OUT;
     OUT.position = Float4(position, 0, 1);
     OUT.color    = Float4(0, 1, 0, 1);  // RGBA green
     Return OUT;
-}
+}*/
 
 
 //cgDestroyContext(context);//JUST ADDED
