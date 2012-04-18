@@ -3,6 +3,8 @@
 #include <time.h>
 #include <GL/glew.h> // Include the GLEW header file  
 #include <GL/glut.h> // Include the GLUT header file  
+#include <GL/glaux.h> //JUST ADDED
+#include <windows.h> //JUST ADDED
 
 GLuint bgr_tex;
 GLuint uss_tex;
