@@ -19,53 +19,57 @@ GLuint sun_sph;
 
 GLUquadricObj *sphere;
 
-/*
-
-//JUST ADDED this section
-CGcontext context = cgCreateContext(); 
-CGGLenum profileType;
-CGprofile profile = cgGLGetLatestProfile(profileType);
-//where profileType is either CG_GL_VERTEX or CG_GL_FRAGMENT. 
-//cgGLSetOptimalOptions(profile);
-
-CGprogram cgCreateProgramFromFile(
-                        CGcontext context,
-                        CGenum programType,
-                        const char *programFile,
-                        CGprofile profile,
-                        const char *entry,
-                        const char **args);
-
-/*The argument programType can be either CG_OBJECT or CG_SOURCE. If it is CG_SOURCE, then the file is assumed to be an ASCII text file containing Cg source code
-*/
-/*
-void cgGLLoadProgram(CGprogram program);
-void cgGLBindProgram(CGprogram program);
-
-//CGparameter position = cgGLGetNamedParameter(vertexProgram, "position");
-
-void cgGLSetStateMatrixParameter(CGparameter parameter,
-                                 GLenum stateMatrixType,
-                                 GLenum transform);
-*/
-/*
-
-//this stuff draws a triangle
-struct VertOut {
-    float4 position : POSITION;
-    float4 color    : COLOR;
-};
-
-VertOut C2E1v_green(Float2 position : POSITION)
+void cgStuff()
 {
-    VertOut OUT;
-    OUT.position = Float4(position, 0, 1);
-    OUT.color    = Float4(0, 1, 0, 1);  // RGBA green
-    Return OUT;
-}*/
+    /*
+    //JUST ADDED this section
+    //CGcontext context = cgCreateContext(); 
+    //CGGLenum profileType;
+    //CGprofile profile = cgGLGetLatestProfile(profileType);
+    //where profileType is either CG_GL_VERTEX or CG_GL_FRAGMENT. 
+    //cgGLSetOptimalOptions(profile);
+
+    CGprogram cgCreateProgramFromFile(
+                            CGcontext context,
+                            CGenum programType,
+                            const char *programFile,
+                            CGprofile profile,
+                            const char *entry,
+                            const char **args);
+    */
+    /*The argument programType can be either CG_OBJECT or CG_SOURCE. If it is CG_SOURCE, then the file is assumed to be an ASCII text file containing Cg source code
+    */
+
+    void cgGLLoadProgram(CGprogram program);
+    void cgGLBindProgram(CGprogram program);
+
+    //CGparameter position = cgGLGetNamedParameter(vertexProgram, "position");
+
+    /*void cgGLSetStateMatrixParameter(CGparameter parameter,
+                                     GLenum stateMatrixType,
+                                     GLenum transform);*/
+
+    /*
+
+    //this stuff draws a triangle
+    struct VertOut {
+        float4 position : POSITION;
+        float4 color    : COLOR;
+    };
+
+    VertOut C2E1v_green(Float2 position : POSITION)
+    {
+        VertOut OUT;
+        OUT.position = Float4(position, 0, 1);
+        OUT.color    = Float4(0, 1, 0, 1);  // RGBA green
+        Return OUT;
+    }*/
 
 
-//cgDestroyContext(context);//JUST ADDED
+    //cgDestroyContext(context);//JUST ADDED
+
+}
+
 
 float random(int N) {
     return ((double)rand() / ((double)RAND_MAX + 1) * N);
@@ -107,8 +111,6 @@ void renderShip(float x, float y, float z) {
     float scale=0.5f;
     float imgsx = 1/5.0;
     float imgsy = 1/2.5;
-    int i;
-    int mode = GL_POLYGON;
     glPushMatrix();
     glTranslatef(x, y, z);
     glColor3f(1.0f, 1.0f, 1.0f);
