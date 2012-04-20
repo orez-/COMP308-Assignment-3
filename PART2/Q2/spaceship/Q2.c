@@ -21,7 +21,7 @@ GLUquadricObj *sphere;
 
 void cgStuff()
 {
-    /*
+    
     //JUST ADDED this section
     //CGcontext context = cgCreateContext(); 
     //CGGLenum profileType;
@@ -36,7 +36,7 @@ void cgStuff()
                             CGprofile profile,
                             const char *entry,
                             const char **args);
-    */
+    
     /*The argument programType can be either CG_OBJECT or CG_SOURCE. If it is CG_SOURCE, then the file is assumed to be an ASCII text file containing Cg source code
     */
 
@@ -153,17 +153,21 @@ void renderBackground()
 }
 
 void display (void) {
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Clear the background of our window to black  
-    glClear(GL_COLOR_BUFFER_BIT); //Clear the colour buffer
-    glLoadIdentity(); // Load the Identity Matrix to reset our drawing locations  
-    glTranslatef(0.0f, 0.0f, -5.0f);
+    int i = 0;
+    float max = 1000.0f;
+    for(; i<max; i++)
+    {   // Animation!
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Clear the background of our window to black  
+        glClear(GL_COLOR_BUFFER_BIT); //Clear the colour buffer
+        glLoadIdentity(); // Load the Identity Matrix to reset our drawing locations  
+        glTranslatef(0.0f, 0.0f, -5.0f);
     
-    renderBackground();
-    renderStars(20);
-    renderSun(7, 4,-20);
-    renderAsteroid(-1.75, -1.25, 0);
-    renderShip(-1,0,0);
-    glFlush(); // Flush the OpenGL buffers to the window  
+        renderBackground();
+        renderSun(7-(4.5*i)/max, 4-(3*i)/max,-20+(15*i)/max);
+        renderAsteroid(-1.75+i/max, -1.25, 0);
+        renderShip(-i*2/max,1,0);
+        glFlush(); // Flush the OpenGL buffers to the window  
+    }
 }
 
 void reshape (int width, int height) {
